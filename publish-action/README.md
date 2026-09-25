@@ -11,8 +11,10 @@ permissions:
   contents: write
 steps:
   - uses: actions/checkout@v4
-  - uses: quizdock/quiz-store/publish-action@main
+  - uses: quizdock/quiz-store/publish-action@v1
 ```
+
+`@v1` follows the latest compatible version: fixes arrive by themselves, and a breaking change would come as `v2`, adopted deliberately. Versions are tagged `v1.0.0`, `v1.0.1`… and `v1` moves to the newest of them.
 
 Inputs: `directory` (default `quizzes`), `max-mb` (default `20`), `tag` (default `quizzes`), `token` (default the workflow token). Invalid quizzes are left out and reported, and the job fails; the valid ones are published anyway. The zips exist only in the release, never in the repository.
 
