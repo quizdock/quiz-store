@@ -137,16 +137,15 @@ export function buildIndex(options) {
 }
 
 /**
- * The bundle as QuizDock reads it, always the same bytes for the same files:
- * entries sorted, a fixed date, the manifest deflated and the media stored
- * (they are compressed formats already).
+ * The bundle as QuizDock reads it, always the same bytes for the same files
+ * (with the fflate version the lockfile pins): entries sorted, a fixed date,
+ * everything deflated at QuizDock's own level. Media are not all compressed
+ * already: a video straight from a phone can shrink by half.
  */
 export function buildZip(manifest, media) {
-  const entries = { 'quiz.json': [manifest, { level: 9, mtime: ZIP_DATE }] };
-  for (const path of Object.keys(media).sort()) {
-    entries[path] = [media[path], { level: 0, mtime: ZIP_DATE }];
-  }
-  return zipSync(entries);
+  const entries = { 'quiz.json': [manifest, { mtime: ZIP_DATE }] };
+  for (const path of Object.keys(media).sort()) entries[path] = [media[path], { mtime: ZIP_DATE }];
+  return zipSync(entries, { level: 6 });
 }
 
 /** What sits in the quizzes folder: quiz folders, and anything else to report. */

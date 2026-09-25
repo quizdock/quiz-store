@@ -108,7 +108,7 @@ On every push to the default branch:
    - quiz licence;
    - a valid language and at least one tag.
 2. **Isolate failures.** An invalid quiz is left out of the index and reported with a message that says what to fix *in QuizDock*. The others are still published: one broken quiz must not block a repository of ten.
-3. **Build one reproducible zip per quiz**: entries sorted, a fixed date, the manifest deflated and the media stored. The same files always give the same bytes, so the same sha256.
+3. **Build one reproducible zip per quiz**: entries sorted, a fixed date, everything deflated at QuizDock's level. The same files always give the same bytes, so the same sha256.
 4. **Update a single rolling release** (tag `quizzes`). It uploads new or changed zips and deletes removed ones. Unchanged quizzes are never re-uploaded.
 5. **Regenerate `index.json`** and attach it to the same release.
 

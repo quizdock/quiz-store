@@ -8961,11 +8961,9 @@ function buildIndex(options) {
   return { index, report, notices };
 }
 function buildZip(manifest, media) {
-  const entries = { "quiz.json": [manifest, { level: 9, mtime: ZIP_DATE }] };
-  for (const path of Object.keys(media).sort()) {
-    entries[path] = [media[path], { level: 0, mtime: ZIP_DATE }];
-  }
-  return zipSync(entries);
+  const entries = { "quiz.json": [manifest, { mtime: ZIP_DATE }] };
+  for (const path of Object.keys(media).sort()) entries[path] = [media[path], { mtime: ZIP_DATE }];
+  return zipSync(entries, { level: 6 });
 }
 function listEntries(dir) {
   let names;
