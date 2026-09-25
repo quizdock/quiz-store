@@ -163,7 +163,11 @@ URLs are absolute: QuizDock never builds a URL from a platform's naming scheme.
 }
 ```
 
-- **Registration, after the first successful publication.** The author fills an issue form with their account name and ticks the attestations: rights on the content and its media, credits given, licence among the three allowed. The maintainer then reviews real quizzes, not an empty repository, and adds the entry.
+- **Registration, after the first successful publication.** The author fills the issue form (`.github/ISSUE_TEMPLATE/register.yml`, label `registration`) with their repository address and ticks the attestations: rights on the content and its media, credits given, licence among the three allowed, no guarantee on answers, removal only stops future downloads. The maintainer then reviews real quizzes, not an empty repository.
+- **Reviewing a registration**, in the issue:
+  1. The repository is public, and the last run of its *Publish quizzes* workflow is green.
+  2. Its `index.json` (release `quizzes`) lists the quizzes; read them for acceptability only: nothing illegal or offensive, no obviously protected media. Answer accuracy is not reviewed.
+  3. Accepted: add the source to `registry.json` in a pull request that closes the issue. Refused: say why in the issue and close it.
 - **Removal:** the maintainer deletes the entry. Future downloads stop; copies already imported by instances are unaffected.
 - **Reports:** QuizDock's "Report" link opens the source's issue tracker, as given in `index.json`. For a takedown or a problematic source, reporters use the `quiz-store` issue tracker.
 - **Known trade-off:** once a source is admitted, new quizzes in it are not reviewed. Reports and removal are the safeguard, as in Obsidian's model.

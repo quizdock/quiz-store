@@ -1,0 +1,52 @@
+name: Register my quizzes
+description: Add your quizdock-quizzes repository to the QuizDock community store.
+title: "Register: "
+labels: [registration]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill this in **once**, after your first quiz has been published (a green check in your repository's *Actions* tab). A maintainer looks at your quizzes, usually within a week. Once accepted, every quiz you publish in that repository appears in the store.
+
+        New here? Start with the [guide](https://github.com/quizdock/quiz-store/blob/main/CONTRIBUTING.md).
+  - type: input
+    id: repository
+    attributes:
+      label: Your repository
+      description: The address of the repository you created from the quizdock-quizzes template.
+      placeholder: https://github.com/your-name/quizdock-quizzes
+    validations:
+      required: true
+  - type: checkboxes
+    id: published
+    attributes:
+      label: Published
+      options:
+        - label: At least one quiz is published in this repository (green check in Actions).
+          required: true
+  - type: checkboxes
+    id: rights
+    attributes:
+      label: Rights and licences
+      description: You answer for what you publish. A quiz reported for infringing content is removed.
+      options:
+        - label: I made these quizzes, or I have the right to share them.
+          required: true
+        - label: Every image, sound and video is my own work or under an open licence that allows reuse, and is credited in QuizDock.
+          required: true
+        - label: Each quiz is under CC0, CC BY or CC BY-SA, so anyone may reuse it on those terms.
+          required: true
+  - type: checkboxes
+    id: understood
+    attributes:
+      label: Good to know
+      options:
+        - label: Nobody checks that the answers are right; players can report mistakes on my repository.
+          required: true
+        - label: A removed quiz is no longer offered, but copies already imported by QuizDock instances stay.
+          required: true
+  - type: textarea
+    id: about
+    attributes:
+      label: About your quizzes (optional)
+      description: Topics, audience, languages… Anything that helps the review.
