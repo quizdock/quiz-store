@@ -1,0 +1,25 @@
+{
+  "name": "@quizdock/quiz-store-publish",
+  "private": true,
+  "description": "Validates QuizDock bundles and publishes them with an index: the CLI, and the GitHub Action that wraps it.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "quiz-store-publish": "src/cli.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "build": "esbuild src/action.mjs --bundle --platform=node --format=esm --target=node22 --outfile=dist/action.mjs --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\""
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  }
+}
