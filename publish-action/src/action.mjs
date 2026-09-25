@@ -42,9 +42,9 @@ async function main() {
   for (const notice of result.notices) console.log(`::notice::${notice}`);
   let failed = false;
   for (const r of result.report) {
-    for (const w of r.warnings) console.log(`::warning file=${dirName}/${r.file}::${w}`);
+    for (const w of r.warnings) console.log(`::warning file=${dirName}/${r.path}::${w}`);
     for (const e of r.errors) {
-      console.log(`::error file=${dirName}/${r.file}::${e}`);
+      console.log(`::error file=${dirName}/${r.path}::${e}`);
       failed = true;
     }
   }

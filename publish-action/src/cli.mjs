@@ -4,8 +4,9 @@ import { buildIndex, reportMarkdown } from './build.mjs';
 import { maxBytesFrom } from './validate.mjs';
 
 /**
- * The same checks and the same index as the GitHub Action, as a plain command:
- * for another CI, or a closed store served as a static folder.
+ * The same checks, zips and index as the GitHub Action, as a plain command:
+ * for another CI, or a closed store served as a static folder. `--dir` holds
+ * one folder per quiz (an unzipped QuizDock export).
  *
  *   quiz-store-publish --dir quizzes --out public --base-url https://quizzes.acme.local/alice \
  *     --host forge.acme.local --vendor alice [--max-mb 20]

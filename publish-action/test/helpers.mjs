@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { strToU8, zipSync } from 'fflate';
 
 export const question = {
@@ -28,5 +30,20 @@ export const manifest = (quiz = {}, over = {}) => ({
   ...over,
 });
 
-export const bundle = (json = manifest(), media = { 'media/paris.webp': new Uint8Array(100) }) =>
-  zipSync({ 'quiz.json': strToU8(JSON.stringify(json)), ...media });
+/** The files of an unzipped export. */
+export const files = (json = manifest(), media = { 'media/paris.webp': new Uint8Array(100) }) => ({
+  'quiz.json': strToU8(JSON.stringify(json)),
+  ...media,
+});
+
+/** The same, zipped as QuizDock downloads it. */
+export const bundle = (json, media) => zipSync(files(json, media));
+
+/** Writes an unzipped export as a folder, as an author uploads it. */
+export function writeFolder(parent, name, content = files()) {
+  for (const [path, bytes] of Object.entries(content)) {
+    const full = join(parent, name, path);
+    mkdirSync(join(full, '..'), { recursive: true });
+    writeFileSync(full, bytes);
+  }
+}
