@@ -7,5 +7,6 @@ Submissions are not open yet.
 - [How to publish your quizzes](CONTRIBUTING.md)
 - [How the store works](SPECIFICATION.md)
 - [Running a closed store for your organisation](SELF-HOSTING.md)
+- [Remaining actions before opening](TODO.md)
 
 The store is optional: QuizDock works fully without it, offline included.
