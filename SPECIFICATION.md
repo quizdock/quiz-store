@@ -53,24 +53,30 @@ Proposal: **`<forge host>/<vendor>/<slug>`**, for example `github.com/alice/worl
 
     alice/quizdock-quizzes
       quizzes/
-        world-capitals.quizdock.zip
-        80s-music.quizdock.zip
+        world-capitals.quizdock/
+          quiz.json
+          media/…
+        80s-music.quizdock/
+          quiz.json
+          media/…
       README.md
       .github/workflows/publish.yml
 
-- **One file = one quiz.** Each file is a QuizDock export, unchanged and not unzipped.
-- **Identity comes from the bundle `slug`, not the file name.** QuizDock fixes the slug at the first export and keeps it when the title changes. A file name can drift instead: a browser saves a second download as `world-capitals.quizdock (1).zip`. If two zips in a repository carry the same slug, the CLI publishes neither and reports the conflict: the files may be two versions of one quiz (delete the older file) or two different quizzes with the same title (change the slug of one in QuizDock's publication export). It never guesses.
-- **To add** a quiz, upload a file. **To update** it, upload the new export, and delete the old file if its name differs. **To remove** it, delete the file.
+- **One folder = one quiz**: a QuizDock export for publication, unzipped. The repository holds the quizzes as files, never as archives: `quiz.json` reads and diffs as text, and git stores an unchanged media file once, however many times the quiz is updated. **The zips are built by the release**, never committed.
+- **Identity comes from the bundle `slug`, not the folder name.** A folder name can drift: a browser saves a second download as `world-capitals.quizdock (1).zip`, which unzips to `world-capitals.quizdock (1)/`. If two folders carry the same slug, the CLI publishes neither and reports the conflict: two versions of one quiz (delete the older folder) or two different quizzes with the same title (change the slug of one in QuizDock's publication export). It never guesses.
+- **To add** a quiz, unzip the export and upload its folder into `quizzes/`. **To update** it, upload the new folder over the old one (delete the old one if its name differs). **To remove** it, delete the folder.
+- A zip, or loose files, dropped into `quizzes/` are refused with a message saying what to upload instead.
+- Media files the quiz no longer uses (left over from an earlier version) stay in the folder but are left out of the zip, with a note.
 - The first run, with an empty `quizzes/` folder, publishes an empty index and does not fail.
 - `publish.yml` only calls the shared action (`uses: quizdock/quiz-store/publish-action@v1`). A fix to validation or to the index reaches every author with no change on their side.
 
 ## Media
 
-- **The expected path is QuizDock's publication export** (see below). QuizDock's media library converts in the browser to light, widely read formats: WebP, MP4 H.264, M4A AAC. It also enforces its own size limits. What it exports is what the store expects.
+- **The expected path is QuizDock's publication export** (see below), unzipped. QuizDock's media library converts in the browser to light, widely read formats: WebP, MP4 H.264, M4A AAC. It also enforces its own size limits. What it exports is what the store expects.
 - **If the contributor's browser cannot convert**, it is up to the contributor to prepare the media with the tools of their choice before adding them to QuizDock. The store gives no support for that.
 - **The CLI checks nothing about media quality, only sizes:**
-  - total zip size ≤ 20 MB (configurable, and the same default as QuizDock's `PUBLICATION_MAX_MB`), under GitHub's 25 MB web-upload limit for one file. The contributor uploads one zip, so this covers the whole quiz;
-  - the archive limits of QuizDock's importer.
+  - the quiz ≤ 20 MB (configurable, and the same default as QuizDock's `PUBLICATION_MAX_MB`), checked on the folder before reading it and on the built zip;
+  - each media file within GitHub's 25 MB web-upload limit, which the 20 MB total already guarantees.
 
 ## QuizDock's publication export
 
@@ -95,15 +101,16 @@ The CLI repeats the checks a bundle can prove, since a zip can come from anywher
 
 On every push to the default branch:
 
-1. **Validate each zip on its own:**
+1. **Validate each quiz folder on its own:**
    - bundle JSON Schema, at the pinned version;
-   - archive limits;
+   - every media the quiz uses is present;
    - total size;
    - quiz licence;
    - a valid language and at least one tag.
 2. **Isolate failures.** An invalid quiz is left out of the index and reported with a message that says what to fix *in QuizDock*. The others are still published: one broken quiz must not block a repository of ten.
-3. **Update a single rolling release** (tag `quizzes`). It uploads new or changed zips and deletes removed ones. Unchanged quizzes are never re-uploaded.
-4. **Regenerate `index.json`** and attach it to the same release.
+3. **Build one reproducible zip per quiz**: entries sorted, a fixed date, the manifest deflated and the media stored. The same files always give the same bytes, so the same sha256.
+4. **Update a single rolling release** (tag `quizzes`). It uploads new or changed zips and deletes removed ones. Unchanged quizzes are never re-uploaded.
+5. **Regenerate `index.json`** and attach it to the same release.
 
 The CLI is a standalone Node script. It runs just as well in GitLab CI, Forgejo Actions or by hand, and it can write a plain static folder instead of a release.
 
@@ -183,10 +190,10 @@ Run these tests with a brand-new GitHub account:
 - [x] `permissions: contents: write` in the workflow is enough to create and update the release. *(2026-09-25, with a real QuizDock export: release created, unchanged zips kept by digest, errors annotated on the files.)*
 - [ ] Whether two-factor authentication is required at once or after a grace period, for an account that pushes.
 - [ ] After sign-up, GitHub brings the user back to the page they came from.
-- [ ] GitHub's 25 MB web-upload limit, against the 20 MB total per quiz.
+- [ ] Dragging a folder (with its `media/` sub-folder) onto GitHub's *Upload files* keeps its structure, in the common browsers.
 - [ ] Whether "Use this template" proposes the template's name or leaves the field empty (the guide assumes the author types `quizdock-quizzes`).
 
-Also note: each update of a large zip stays in the repository's git history for good. The 20 MB limit keeps that growth reasonable.
+Also note: the history keeps every version of `quiz.json` and each distinct media file once. Updating a quiz whose media did not change adds almost nothing.
 
 ## Out of scope for now
 

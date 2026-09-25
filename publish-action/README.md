@@ -1,6 +1,6 @@
 # Publish action and CLI
 
-Validates the QuizDock bundles (`.quizdock.zip`) of a folder and publishes the valid ones with an `index.json`, as described in the [specification](../SPECIFICATION.md).
+Validates the quizzes of a folder (one sub-folder per quiz: an unzipped QuizDock export), builds a reproducible `.quizdock.zip` for each valid one, and publishes them with an `index.json`, as described in the [specification](../SPECIFICATION.md).
 
 ## GitHub Action
 
@@ -14,11 +14,11 @@ steps:
   - uses: quizdock/quiz-store/publish-action@main
 ```
 
-Inputs: `directory` (default `quizzes`), `max-mb` (default `20`), `tag` (default `quizzes`), `token` (default the workflow token). Invalid quizzes are left out and reported, and the job fails; the valid ones are published anyway.
+Inputs: `directory` (default `quizzes`), `max-mb` (default `20`), `tag` (default `quizzes`), `token` (default the workflow token). Invalid quizzes are left out and reported, and the job fails; the valid ones are published anyway. The zips exist only in the release, never in the repository.
 
 ## CLI
 
-The same checks and the same index, for another CI or a static folder:
+The same checks, zips and index, for another CI or a static folder:
 
 ```sh
 node publish-action/src/cli.mjs --dir quizzes --out public \

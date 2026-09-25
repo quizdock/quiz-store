@@ -31,51 +31,28 @@ export function maxBytesFrom(mb) {
   return (Number.isFinite(n) && n > 0 ? n : 20) * MB;
 }
 
-const megabytes = (bytes) => `${(bytes / MB).toFixed(1)} MB`;
-const EXPORT_AGAIN = 'then choose Export for publication again and upload the new file';
+export const megabytes = (bytes) => `${(bytes / MB).toFixed(1)} MB`;
+const EXPORT_AGAIN = 'then choose Export for publication again, unzip it and upload the new folder';
 
 /**
- * Checks one bundle the way the store needs it, and says what to fix in
- * QuizDock when it cannot be published.
+ * Checks one quiz the way the store needs it, from its files (`quiz.json` and
+ * `media/…`), and says what to fix in QuizDock when it cannot be published.
+ * Only the media the quiz uses are kept: a leftover file from an earlier
+ * version is left out, with a note.
  *
- * @param {Uint8Array} bytes the `.quizdock.zip` file
- * @param {{ maxBytes: number }} options
- * @returns {{ ok: true, manifest: object, files: Record<string, Uint8Array>, warnings: string[] }
+ * @param {Record<string, Uint8Array>} files
+ * @returns {{ ok: true, manifest: object, media: Record<string, Uint8Array>, warnings: string[] }
  *         | { ok: false, errors: string[], warnings: string[] }}
  */
-export function validateBundle(bytes, { maxBytes }) {
+export function validateFiles(files) {
   const warnings = [];
   const fail = (...errors) => ({ ok: false, errors, warnings });
 
-  if (!looksLikeZip(bytes)) {
-    return fail(
-      `This is not a QuizDock bundle. In QuizDock, open the quiz, ${EXPORT_AGAIN}, without unzipping it.`,
-    );
-  }
-  if (bytes.length > maxBytes) {
-    return fail(
-      `The quiz weighs ${megabytes(bytes.length)}, over the ${megabytes(maxBytes)} limit. In QuizDock, lighten or remove its heaviest media, ${EXPORT_AGAIN}.`,
-    );
-  }
-
-  let files;
-  try {
-    files = readArchive(
-      bytes,
-      (name) => name === 'quiz.json' || /^media\/[^/]+$/.test(name),
-      { maxEntries: 2000, maxEntryBytes: maxBytes, maxTotalBytes: 2 * maxBytes },
-    );
-  } catch (err) {
-    return fail(
-      err.code === 'too_large'
-        ? `The quiz is too large once unpacked. In QuizDock, lighten its media, ${EXPORT_AGAIN}.`
-        : `The file is damaged and cannot be read. In QuizDock, ${EXPORT_AGAIN}.`,
-    );
-  }
   if (!files['quiz.json']) {
-    return fail(`The file holds no quiz (quiz.json is missing). In QuizDock, ${EXPORT_AGAIN}.`);
+    return fail(
+      `The folder holds no quiz.json. Upload the folder you get by unzipping QuizDock's Export for publication, as it is.`,
+    );
   }
-
   let manifest;
   try {
     manifest = JSON.parse(new TextDecoder().decode(files['quiz.json']));
@@ -112,23 +89,60 @@ export function validateBundle(bytes, { maxBytes }) {
   if (!Array.isArray(quiz.tags) || quiz.tags.length === 0) {
     errors.push(`The quiz needs at least one tag. In QuizDock: quiz settings → Sharing → Tags, ${EXPORT_AGAIN}.`);
   }
-  const missing = [...referencedMedia(manifest)].filter((path) => !files[path]);
+  const used = [...referencedMedia(manifest)].sort();
+  const missing = used.filter((path) => !files[path]);
   if (missing.length) {
     errors.push(
-      `The file lacks media the quiz uses (${missing.slice(0, 3).join(', ')}${missing.length > 3 ? '…' : ''}). In QuizDock, ${EXPORT_AGAIN}.`,
+      `The folder lacks media the quiz uses (${missing.slice(0, 3).join(', ')}${missing.length > 3 ? '…' : ''}). In QuizDock, ${EXPORT_AGAIN}.`,
     );
   }
   if (errors.length) return fail(...errors);
 
-  const uncredited = Object.keys(files)
-    .filter((path) => path.startsWith('media/'))
-    .filter((path) => !manifest.media?.[path]?.credit?.trim());
+  const unused = Object.keys(files).filter((p) => p.startsWith('media/') && !used.includes(p));
+  if (unused.length) {
+    warnings.push(
+      `${unused.length} file(s) in media/ are not used by the quiz (left over from an earlier version?) and are left out. You can delete them.`,
+    );
+  }
+  const uncredited = used.filter((path) => !manifest.media?.[path]?.credit?.trim());
   if (uncredited.length) {
     warnings.push(
       `${uncredited.length} media without a credit. You answer for the rights to every image, sound and video you publish: credit them in your QuizDock media library.`,
     );
   }
-  return { ok: true, manifest, files, warnings };
+  const media = Object.fromEntries(used.map((path) => [path, files[path]]));
+  return { ok: true, manifest, media, warnings };
+}
+
+/**
+ * The same checks on a zip, within the archive limits of QuizDock's importer:
+ * a built bundle must read back as QuizDock reads it.
+ *
+ * @param {Uint8Array} bytes
+ * @param {{ maxBytes: number }} options
+ */
+export function validateZip(bytes, { maxBytes }) {
+  if (!looksLikeZip(bytes)) {
+    return { ok: false, errors: ['This is not a QuizDock bundle.'], warnings: [] };
+  }
+  try {
+    const files = readArchive(
+      bytes,
+      (name) => name === 'quiz.json' || /^media\/[^/]+$/.test(name),
+      { maxEntries: 2000, maxEntryBytes: maxBytes, maxTotalBytes: 2 * maxBytes },
+    );
+    return validateFiles(files);
+  } catch (err) {
+    return {
+      ok: false,
+      errors: [
+        err.code === 'too_large'
+          ? `The quiz is too large once unpacked. In QuizDock, lighten its media, ${EXPORT_AGAIN}.`
+          : `The file is damaged and cannot be read. In QuizDock, ${EXPORT_AGAIN}.`,
+      ],
+      warnings: [],
+    };
+  }
 }
 
 /** Every media path the manifest points at: fields holding a path, and images inside Markdown. */
