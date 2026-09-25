@@ -1,0 +1,18 @@
+name: Publish QuizDock quizzes
+description: Validates the QuizDock bundles of a repository and publishes them, with their index, to a rolling release.
+inputs:
+  token:
+    description: Token allowed to write releases.
+    default: ${{ github.token }}
+  directory:
+    description: Folder holding the .quizdock.zip files.
+    default: quizzes
+  max-mb:
+    description: Largest bundle accepted, in MB.
+    default: '20'
+  tag:
+    description: Tag of the rolling release.
+    default: quizzes
+runs:
+  using: node24
+  main: dist/action.mjs

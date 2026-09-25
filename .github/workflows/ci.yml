@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  publish-action:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: publish-action
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: publish-action/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: dist/ matches the sources
+        run: |
+          npm run build
+          if ! git diff --exit-code -- dist; then
+            echo "::error::dist/action.mjs is out of date. Run 'npm run build' in publish-action and commit it."
+            exit 1
+          fi
+      - name: registry.json is valid JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('../registry.json','utf8'))"
