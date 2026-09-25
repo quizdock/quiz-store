@@ -18,7 +18,7 @@ You need a GitHub account and [QuizDock](https://github.com/quizdock/quiz-dock).
 
 **Join the store (once, after your first green check)**
 
-Fill in the store's registration form (link coming when submissions open). A maintainer looks at your quizzes, usually within a week. After that, everything you publish appears in the store.
+Fill in the [registration form](https://github.com/quizdock/quiz-store/issues/new?template=register.yml). A maintainer looks at your quizzes, usually within a week. After that, everything you publish appears in the store.
 
 **Update a quiz:** export it again, unzip it, and upload the folder over the old one (delete the old folder if its name differs). **Remove a quiz:** delete its folder.
 
