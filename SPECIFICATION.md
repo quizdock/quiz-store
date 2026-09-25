@@ -179,8 +179,8 @@ See [`SELF-HOSTING.md`](SELF-HOSTING.md).
 
 Run these tests with a brand-new GitHub account:
 
-- [ ] Workflows run in a repository created from the template, with no manual activation.
-- [ ] `permissions: contents: write` in the workflow is enough to create and update the release.
+- [x] Workflows run in a repository created from the template, with no manual activation. *(2026-09-25: the initial commit of the new repository triggers the first run.)*
+- [x] `permissions: contents: write` in the workflow is enough to create and update the release. *(2026-09-25, with a real QuizDock export: release created, unchanged zips kept by digest, errors annotated on the files.)*
 - [ ] Whether two-factor authentication is required at once or after a grace period, for an account that pushes.
 - [ ] After sign-up, GitHub brings the user back to the page they came from.
 - [ ] GitHub's 25 MB web-upload limit, against the 20 MB total per quiz.
